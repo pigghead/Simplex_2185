@@ -276,7 +276,17 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	vector3 v3Next = vector3(0, a_fRadius, 0);
+	for (int i = 0; i < a_nSubdivisions + 1; i++)
+	{
+		double rad = (2 * PI / a_nSubdivisions) * i;
+		vector3 v3Prev = vector3(sin(rad)*a_fRadius, cos(rad)*a_fRadius, 0);
+		AddTri(vector3(0, 0, 0), v3Prev, v3Next);
+		AddTri(v3Next, v3Prev, vector3(0, 0, a_fHeight));
+		v3Next = v3Prev;
+	}
+
 	// -------------------------------
 
 	// Adding information about color
@@ -300,7 +310,17 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	vector3 v3Next = vector3(0, a_fRadius, 0);
+	for (int i = 0; i < a_nSubdivisions + 1; i++)
+	{
+		double rad = (2 * PI / a_nSubdivisions) * i;
+		vector3 v3Prev = vector3(sin(rad)*a_fRadius, cos(rad)*a_fRadius, 0);
+		AddQuad(v3Next, v3Prev, vector3(v3Next.x, v3Next.y, v3Next.z + a_fHeight), vector3(v3Prev.x, v3Prev.y, v3Next.z + a_fHeight)); // faces of cylinder
+		AddTri(vector3(0, 0, 0), v3Prev, v3Next); // top of cylinder
+		AddTri(vector3(0, 0, a_fHeight),vector3(v3Next.x, v3Next.y, a_fHeight), vector3(v3Prev.x, v3Prev.y, a_fHeight)); // bottom of cylinder
+		v3Next = v3Prev;
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -330,7 +350,43 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	vector3 v3InnerNext = vector3(0, a_fInnerRadius, 0);
+	vector3 v3OuterNext = vector3(0, a_fOuterRadius, 0);
+	for (int i = 0; i < a_nSubdivisions + 1; i++)
+	{
+		double rad = (2 * PI / a_nSubdivisions) * i;
+		vector3 v3InnerPrev = vector3(sin(rad)*a_fInnerRadius, cos(rad)*a_fInnerRadius, 0);
+		vector3 v3OuterPrev = vector3(sin(rad)*a_fOuterRadius, cos(rad)*a_fOuterRadius, 0);
+
+		// inner face
+		AddQuad(v3InnerNext, 
+				v3InnerPrev, 
+				vector3(v3InnerNext.x, v3InnerNext.y, v3InnerNext.z + a_fHeight), 
+				vector3(v3InnerPrev.x, v3InnerPrev.y, v3InnerPrev.z + a_fHeight)
+		);
+
+		// outer face
+		AddQuad(v3OuterPrev, 
+				v3OuterNext, 
+				vector3(v3OuterPrev.x, v3OuterPrev.y, v3OuterPrev.z + a_fHeight), 
+				vector3(v3OuterNext.x, v3OuterNext.y, v3OuterNext.z + a_fHeight)
+		);
+
+		// top face
+		AddQuad(v3InnerPrev, v3InnerNext, v3OuterPrev, v3OuterNext);
+
+		// bottom face
+		AddQuad(vector3(v3InnerNext.x, v3InnerNext.y, v3InnerNext.z + a_fHeight),
+				vector3(v3InnerPrev.x, v3InnerPrev.y, v3InnerPrev.z + a_fHeight),
+				vector3(v3OuterNext.x, v3OuterNext.y, v3OuterNext.z + a_fHeight),
+				vector3(v3OuterPrev.x, v3OuterPrev.y, v3OuterPrev.z + a_fHeight)
+		);
+
+		v3InnerNext = v3InnerPrev;
+		v3OuterNext = v3OuterPrev;
+	}
+
 	// -------------------------------
 
 	// Adding information about color
@@ -362,7 +418,41 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	// D - C
+	// | \ |
+	// A - B
+	/** CREDIT TO WOLFRAM MATHWORLD FOR THE FORMULA FOR TORUS */
+	float tRad = a_fOuterRadius / 2 + a_fInnerRadius;		// radius from the center of the hole to the center of the torus
+	float cRad = (a_fOuterRadius - a_fInnerRadius) / 2;		// radius of the tube
+
+	vector3 circVec1 = vector3(0, 0, tRad);
+	vector3 circVec2 = vector3(0, 0, a_fInnerRadius);
+	for (int i = 0; i < a_nSubdivisionsA + 1; i++)
+	{
+		double radA = (2 * PI / a_nSubdivisionsA) * i;
+		vector3 outVec1 = vector3(sin(radA)*tRad, 0, cos(radA)*tRad);
+		vector3 outVec2 = vector3(sin(radA)*a_fInnerRadius, 0, cos(radA)*a_fInnerRadius);
+
+		for (int j = 0; j < a_nSubdivisionsB + 1; j++)
+		{
+			double radB = (2 * PI / a_nSubdivisionsB) * j;
+			double radB2 = (2 * PI / a_nSubdivisionsB) * (j + 1);
+			vector3 inVec1 = vector3(sin(radB)*cRad, cos(radB)*cRad, 0);
+			vector3 inVec2 = vector3(sin(radB2)*cRad, cos(radB2)*cRad, 0);
+
+			// Compute each vertice that will make up one quad of the torus
+			vector3 vertexA = inVec1 + circVec1;
+			vector3 vertexB = inVec2 + circVec1;
+			vector3 vertexC = inVec1 + outVec1;
+			vector3 vertexD = inVec2 + outVec1;
+
+			AddQuad(vertexA, vertexB, vertexC, vertexD); // add aforementioned quad
+		}
+		circVec1 = outVec1; // store the previous outermost unit circle vector as the current unit circle vector
+		circVec2 = outVec2;
+	}
+
 	// -------------------------------
 
 	// Adding information about color
@@ -387,7 +477,34 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	// Sphere made up of vector points in longitude(rows) and latitude(columns)
+	vector3 circVec = vector3(0, a_fRadius, 0);
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// angles between vertex & starting point/s
+		double r1 = (2 * PI / a_nSubdivisions) * i;
+		double r2 = (2 * PI / a_nSubdivisions) * (i + 1);
+
+		vector3 nextVectorLat1 = vector3(sin(r1)*a_fRadius, cos(r1)*a_fRadius, 0);
+		vector3 nextVectorLat2 = vector3(sin(r2)*a_fRadius, cos(r2)*a_fRadius, 0);
+
+		vector3 circVecLon1 = nextVectorLat1;
+		vector3 circVecLon2 = nextVectorLat2;
+
+		for (int j = 0; j < a_nSubdivisions + 1; j++)
+		{
+			double r3 = (2 * PI / a_nSubdivisions) * j;
+			vector3 nextVectorLon1 = vector3(sin(r3)*nextVectorLat1.x, nextVectorLat1.y, cos(r3)*nextVectorLat1.x); // inputting .x for z gets me closer to a sphere?
+			vector3 nextVectorLon2 = vector3(sin(r3)*nextVectorLat2.x, nextVectorLat2.y, cos(r3)*nextVectorLat2.x);
+			
+			AddQuad(circVecLon1, nextVectorLon1, circVecLon2, nextVectorLon2);
+
+			circVecLon1 = nextVectorLon1;
+			circVecLon2 = nextVectorLon2;
+		}
+		circVec = nextVectorLat1;
+	}
 	// -------------------------------
 
 	// Adding information about color
