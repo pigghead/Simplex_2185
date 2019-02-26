@@ -20,6 +20,8 @@ class Application
 {
 	uint m_uOrbits = 0; //number of shapes starting at 3 and increasing in sides
 	std::vector<uint> m_shapeList; //shape index for circles
+	std::vector< std::vector<vector3> > m_stopsList; // list of stops the sphere(s) make
+	std::vector<int> m_routeControl; // controls route for "2nd index" of m_stopsList
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 	
 private:

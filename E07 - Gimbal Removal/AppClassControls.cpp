@@ -416,24 +416,37 @@ void Application::ProcessKeyboard(void)
 #pragma endregion
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
-		if (fMultiplier)
-			m_v3Rotation.x -= 1.0f;
-		else
-			m_v3Rotation.x += 1.0f;
+		if (fMultiplier) {
+			//m_v3Rotation.x -= 1.0f; Negative here --> negative below
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(-1.0f), AXIS_X);
+		}
+		else {
+			//m_v3Rotation.x += 1.0f; Positive here --> positive below
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), AXIS_X);
+		}
+
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y))
 	{
-		if (fMultiplier)
-			m_v3Rotation.y -= 1.0f;
-		else
-			m_v3Rotation.y += 1.0f;
+		if (fMultiplier) {
+			//m_v3Rotation.y -= 1.0f; AS ABOVE, SO BELOW (neg here, neg there)
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(-1.0f), AXIS_Y);
+		}
+		else {
+			//m_v3Rotation.y += 1.0f;
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), AXIS_Y);
+		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
 	{
-		if (fMultiplier)
-			m_v3Rotation.z -= 1.0f;
-		else
-			m_v3Rotation.z += 1.0f;
+		if (fMultiplier) {
+			//m_v3Rotation.z -= 1.0f;
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(-1.0f), AXIS_Z);
+		}
+		else {
+			//m_v3Rotation.z += 1.0f;
+			m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), AXIS_Z);
+		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
