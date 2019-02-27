@@ -19,7 +19,7 @@ class Application
 	MyCamera* m_pCamera = nullptr; //Camera class
 	MyMeshManager* m_pMyMeshMngr = nullptr; //My Mesh Manager
 	String m_sProgrammer = "Justin Armstrong - jxa1762@rit.edu"; //Programmer
-	/******************************/
+	/************************/
 	float m_fFov = 45.0f;	// member float variable denoting field of view
 	vector3 m_v3Eye;		// member vector3 variable denoting what we're looking at
 private:

@@ -34,7 +34,7 @@ void Application::DrawGUI(void)
 			ImGui::Text("FrameRate: %.2f [FPS] -> %.3f [ms/frame]\n",
 				ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 			ImGui::Text("Control:\n");
-			ImGui::Text("   WASD: Movement\n");
+			ImGui::Text("   QE,WASD: Movement\n");
 			ImGui::Text("Right Click + move: Rotate line of view\n");
 
 		}
