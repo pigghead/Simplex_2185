@@ -14,6 +14,12 @@ Date: 2017/05
 
 class Application
 {
+	//m_pCameraMngr.set
+
+	float m_fFov = 90.0f;
+
+	vector3 m_v3Eye;
+
 	matrix4 m_m4Model = IDENTITY_M4;
 	quaternion m_qOrientation;
 	vector3 m_v3Rotation;
