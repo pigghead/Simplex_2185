@@ -153,9 +153,14 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 void MyCamera::MoveForward(float a_fDistance)
 {
 	//The following is just an example and does not take in account the forward vector (AKA view vector)
-	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
+	/*m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
 	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
+	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);*/
+	// https://learnopengl.com/Getting-started/Camera -- Great resource that helped me interpret most of the movement
+	vector3 dir = m_v3Target - m_v3Position;
+	m_v3Position += dir * a_fDistance;
+	m_v3Above += dir * a_fDistance;
+	m_v3Target += dir * a_fDistance;
 }
 
 void MyCamera::MoveVertical(float a_fDistance)
@@ -167,7 +172,10 @@ void MyCamera::MoveVertical(float a_fDistance)
 
 void MyCamera::MoveSideways(float a_fDistance)
 {
-	m_v3Position += vector3(-a_fDistance, 0.0f, 0.0f);
-	m_v3Target += vector3(-a_fDistance, 0.0f, 0.0f);
-	m_v3Above += vector3(-a_fDistance, 0.0f, 0.0f);
+	// Cross product of my forward vector and my upwards vector will give me my right hand vector -- remember that reversing this will give me my left!
+	// (Right is industry/code standard).
+	vector3 right = glm::cross(m_v3Target - m_v3Position, m_v3Above - m_v3Position);
+	m_v3Position += right * -a_fDistance;
+	m_v3Target += right * -a_fDistance;
+	m_v3Above += right * -a_fDistance;
 } //defined
