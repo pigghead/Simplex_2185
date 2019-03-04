@@ -369,7 +369,36 @@ void Application::CameraRotation(float a_fSpeed)
 		fAngleX += fDeltaMouse * a_fSpeed;
 	}
 	//Change the Yaw and the Pitch of the camera
-	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
+	m_fYaw += fAngleY * 0.15;  // h
+	m_fPitch -= fAngleX * 0.15;  // v
+
+	if (m_fPitch > 89)
+		m_fPitch = 89;
+	if (m_fPitch < -89)
+		m_fPitch = -89;
+
+	//glm::vec3 tDir(cos(glm::radians(m_fPitch)) * cos(glm::radians(m_fYaw)), sin(glm::radians(m_fPitch)), cos(glm::radians(m_fPitch)) * sin(glm::radians(m_fYaw)));
+	//glm::vec3 tDir(cos(m_fPitch) * sin(m_fYaw), sin(m_fPitch), cos(m_fYaw) * sin(m_fPitch));
+	glm::vec3 tDir;
+	tDir.x = cos(m_fPitch) * sin(m_fYaw);
+	tDir.y = sin(m_fPitch);
+	tDir.z = cos(m_fPitch) * cos(m_fYaw);
+	tDir = glm::normalize(tDir);
+
+	//glm::vec3 tRight = glm::vec3(sin(glm::radians(m_fYaw)), 0, cos(glm::radians(m_fPitch)));
+	glm::vec3 tRight; 
+	tRight.x = sin(m_fYaw - (2 / PI));
+	tRight.y = 0;
+	tRight.z = cos(m_fYaw - (2 / PI));
+	//tRight = glm::normalize(tRight);
+	//glm::vec3(sin(m_fYaw - 2 / PI), 0, cos(m_fYaw - 2 / PI));
+
+
+	glm::vec3 tUp = glm::cross(tRight, tDir);
+	glm::vec3 position = m_pCamera->GetPosition();
+	//tDir = glm::normalize(tDir);
+	m_pCamera->SetPositionTargetAndUpward(position, tDir + position, tUp);
+	SetCursorPos(CenterX, CenterY);  //Position the mouse in the center
 }
 //Keyboard
 void Application::ProcessKeyboard(void)

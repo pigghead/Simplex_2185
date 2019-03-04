@@ -22,6 +22,8 @@ class Application
 	/************************/
 	float m_fFov = 45.0f;	// member float variable denoting field of view
 	vector3 m_v3Eye;		// member vector3 variable denoting what we're looking at
+	float m_fPitch = 0.0f;  // vertical (up + down) 
+	float m_fYaw = 0.0f;  // horizontal (left + right)
 private:
 	static ImGuiObject gui; //GUI object
 
