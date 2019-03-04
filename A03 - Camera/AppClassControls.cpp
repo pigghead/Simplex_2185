@@ -383,7 +383,6 @@ void Application::CameraRotation(float a_fSpeed)
 	tDir.x = cos(m_fPitch) * sin(m_fYaw);
 	tDir.y = sin(m_fPitch);
 	tDir.z = cos(m_fPitch) * cos(m_fYaw);
-	tDir = glm::normalize(tDir);
 
 	//glm::vec3 tRight = glm::vec3(sin(glm::radians(m_fYaw)), 0, cos(glm::radians(m_fPitch)));
 	glm::vec3 tRight; 
@@ -396,7 +395,7 @@ void Application::CameraRotation(float a_fSpeed)
 
 	glm::vec3 tUp = glm::cross(tRight, tDir);
 	glm::vec3 position = m_pCamera->GetPosition();
-	//tDir = glm::normalize(tDir);
+	tDir = glm::normalize(tDir);
 	m_pCamera->SetPositionTargetAndUpward(position, tDir + position, tUp);
 	SetCursorPos(CenterX, CenterY);  //Position the mouse in the center
 }
