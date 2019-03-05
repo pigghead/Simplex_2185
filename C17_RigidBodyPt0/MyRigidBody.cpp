@@ -13,7 +13,12 @@ vector3 MyRigidBody::GetMinGlobal(void) { return m_v3MinG; }
 vector3 MyRigidBody::GetMaxGlobal(void) { return m_v3MaxG; }
 vector3 MyRigidBody::GetHalfWidth(void) { return m_v3HalfWidth; }
 matrix4 MyRigidBody::GetModelMatrix(void) { return m_m4ToWorld; }
-void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix) { m_m4ToWorld = a_m4ModelMatrix; }
+void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix) 
+{ 
+	m_m4ToWorld = a_m4ModelMatrix; 
+	m_v3CenterG = vector3(m_m4ToWorld * vector4(m_v3Center, 1.0f));  // how do we modify this?
+																	 // 1 - Position, 0 - Rotation
+}
 //Allocation
 void MyRigidBody::Init(void)
 {
@@ -63,6 +68,63 @@ void MyRigidBody::Release(void)
 MyRigidBody::MyRigidBody(std::vector<vector3> a_pointList)
 {
 	Init();
+
+	uint uVertexCount = a_pointList.size();
+	if (uVertexCount < 0)  // good fail safe, start including it
+	{
+		return;
+	}
+
+	m_v3MaxL = m_v3MinL = a_pointList[0];
+	for (uint i = 1; i < uVertexCount; i++)
+	{
+		// test x, y, z
+		if (m_v3MinL.x > a_pointList[i].x)
+			m_v3MinL.x = a_pointList[i].x;
+
+		else if (m_v3MaxL.x < a_pointList[i].x)
+			m_v3MaxL.x = a_pointList[i].x;
+
+		if (m_v3MinL.y > a_pointList[i].y)
+			m_v3MinL.y = a_pointList[i].y;
+
+		else if (m_v3MaxL.y < a_pointList[i].y)
+			m_v3MaxL.y = a_pointList[i].y;
+
+		if (m_v3MinL.z > a_pointList[i].z)
+			m_v3MinL.z = a_pointList[i].z;
+
+		else if (m_v3MaxL.z < a_pointList[i].z)
+			m_v3MaxL.z = a_pointList[i].z;
+	}
+
+	m_v3Center = (m_v3MaxL + m_v3MinL) / 2.0f;
+
+
+
+	// Wrong way:
+	vector3 v3Center = a_pointList[0];
+
+	// Wrong:
+	for (uint i = 1; i < uVertexCount; i++)
+	{
+		v3Center += a_pointList[i];
+	}
+
+	v3Center = v3Center / uVertexCount;  // our (incorrect) calculated center point
+	// Distance from center to the furthest point away:
+	for (uint i = 1; i < uVertexCount; i++)
+	{
+		float fDistance = glm::distance(v3Center, a_pointList[i]);
+		if (glm::distance(v3Center, a_pointList[i]) > m_fRadius)
+			m_fRadius = fDistance;
+	}
+	m_v3Center = v3Center;
+
+	m_v3MaxG = m_v3MaxL;
+	m_v3MinG = m_v3MinL;
+
+	m_v3HalfWidth = m_v3MaxL - m_v3MinL;  // size of the object
 }
 MyRigidBody::MyRigidBody(MyRigidBody const& other)
 {
@@ -102,6 +164,9 @@ void MyRigidBody::AddToRenderList(void)
 {
 	if (!m_bVisible)
 		return;
+
+	m_pMeshMngr->AddWireSphereToRenderList(glm::translate(m_m4ToWorld, m_v3CenterG) * glm::scale(vector3(m_fRadius)), m_v3Color, RENDER_WIRE);
+	m_pMeshMngr->AddWireCubeToRenderList(glm::translate(m_m4ToWorld, m_v3CenterG) * glm::scale(m_v3HalfWidth), C_BLUE, RENDER_WIRE);
 }
 bool MyRigidBody::IsColliding(MyRigidBody* const other)
 {
