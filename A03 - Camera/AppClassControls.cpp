@@ -386,9 +386,9 @@ void Application::CameraRotation(float a_fSpeed)
 
 	//glm::vec3 tRight = glm::vec3(sin(glm::radians(m_fYaw)), 0, cos(glm::radians(m_fPitch)));
 	glm::vec3 tRight; 
-	tRight.x = sin(m_fYaw - (2 / PI));
+	tRight.x = sin(m_fYaw - (PI / 2));
 	tRight.y = 0;
-	tRight.z = cos(m_fYaw - (2 / PI));
+	tRight.z = cos(m_fYaw - (PI / 2));
 	//tRight = glm::normalize(tRight);
 	//glm::vec3(sin(m_fYaw - 2 / PI), 0, cos(m_fYaw - 2 / PI));
 
