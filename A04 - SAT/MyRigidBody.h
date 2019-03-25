@@ -36,6 +36,8 @@ class MyRigidBody
 
 	matrix4 m_m4ToWorld = IDENTITY_M4; //Matrix that will take us from local to world coordinate
 
+	vector3 v3Corner[8]; // the corners of the front + back of the OBB
+
 	std::set<MyRigidBody*> m_CollidingRBSet; //set of rigid bodies this one is colliding with
 
 public:

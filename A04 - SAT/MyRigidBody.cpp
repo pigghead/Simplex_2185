@@ -86,7 +86,6 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 
 	//Calculate the 8 corners of the cube
-	vector3 v3Corner[8];
 	//Back square
 	v3Corner[0] = m_v3MinL;
 	v3Corner[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
@@ -286,6 +285,165 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
+
+	// 15 tests need to be performed.
+
+	// -> 3 axes for A
+	vector3 a_axisX = glm::normalize(v3Corner[1] - v3Corner[0]);
+	vector3 a_axisY = glm::normalize(v3Corner[2] - v3Corner[0]);
+	vector3 a_axisZ = glm::normalize(v3Corner[4] - v3Corner[0]);
+
+	// -> 3 axes for B
+	vector3 b_axisX = glm::normalize(a_pOther->v3Corner[1] - a_pOther->v3Corner[0]);
+	vector3 b_axisY = glm::normalize(a_pOther->v3Corner[2] - a_pOther->v3Corner[0]);
+	vector3 b_axisZ = glm::normalize(a_pOther->v3Corner[4] - a_pOther->v3Corner[0]);
+
+	// store the axes into an array
+	vector3 axes[6];
+	axes[0] = a_axisX;
+	axes[1] = a_axisY;
+	axes[2] = a_axisZ;
+	axes[3] = b_axisX;
+	axes[4] = b_axisY;
+	axes[5] = b_axisZ;
+
+	// cross products to obtain
+	// aXbX, aXbY, aXbZ
+	vector3 cross_aXbX = glm::cross(a_axisX, b_axisX);
+	vector3 cross_aXbY = glm::cross(a_axisX, b_axisY);
+	vector3 cross_aXbZ = glm::cross(a_axisX, b_axisZ);
+
+	// aYbX, aYbY, aZbZ
+	vector3 cross_aYbX = glm::cross(a_axisY, b_axisX);
+	vector3 cross_aYbY = glm::cross(a_axisY, b_axisY);
+	vector3 cross_aYbZ = glm::cross(a_axisY, b_axisZ);
+
+	// aZbX, aZbY, aZbZ
+	vector3 cross_aZbX = glm::cross(a_axisZ, b_axisX);
+	vector3 cross_aZbY = glm::cross(a_axisZ, b_axisY);
+	vector3 cross_aZbZ = glm::cross(a_axisZ, b_axisZ);
+
+	// add all crossproducts to an array
+	vector3 crossProducts[9];
+	crossProducts[0] = cross_aXbX;
+	crossProducts[1] = cross_aXbY;
+	crossProducts[2] = cross_aXbZ;
+	crossProducts[3] = cross_aYbX;
+	crossProducts[4] = cross_aYbY;
+	crossProducts[5] = cross_aYbZ;
+	crossProducts[6] = cross_aZbX;
+	crossProducts[7] = cross_aZbY;
+	crossProducts[8] = cross_aZbZ;
+
+	// Collisions using axes (xyz)
+	for (size_t i = 0; i < 6; i++)
+	{
+		float a_min = 100;
+		float a_max = -100;
+		float b_min = 100;
+		float b_max = -100;
+
+		// test each corner with each axis
+		for (size_t j = 0; j < 8; j++)
+		{
+			float tempDotProduct = glm::dot(axes[i], v3Corner[j]);
+			float tempOtherDotProduct = glm::dot(axes[i], a_pOther->v3Corner[j]);
+
+			if (tempDotProduct <= a_min)
+				a_min = tempDotProduct;
+
+			if (tempDotProduct >= a_max)
+				a_max = tempDotProduct;
+
+			if (tempOtherDotProduct <= b_min)
+				b_min = tempOtherDotProduct;
+
+			if (tempOtherDotProduct >= b_max)
+				b_max = tempOtherDotProduct;
+		}
+
+		// if there is any overlap between projections, return the axis
+		if (a_min >= b_max || a_max <= b_min)
+		{
+			// depending on our current value of i, there is a corresponding axis from the axes array
+			switch (i)
+			{
+				case 0:
+					return eSATResults::SAT_AX;
+				case 1:
+					return eSATResults::SAT_AY;
+				case 2:
+					return eSATResults::SAT_AZ;
+				case 3:
+					return eSATResults::SAT_BX;
+				case 4:
+					return eSATResults::SAT_BY;
+				case 5:
+					return eSATResults::SAT_BZ;
+				default:
+					break;
+			}
+		}
+	}
+
+	// Collisions using cross products
+	for (size_t i = 0; i < 9; i++)
+	{
+		float a_min = 100;
+		float a_max = -100;
+		float b_min = 100;
+		float b_max = -100;
+
+		// "If the cross product of any two points' projections is a number other than zero, they are colliding"
+		if (crossProducts[i] != vector3(0, 0, 0))
+		{
+			for (size_t j = 0; j < 8; j++)
+			{
+				// create temporary dot products between projection onto axis and particular corner
+				float tempDotProduct = glm::dot(crossProducts[i], v3Corner[j]);
+				float tempOtherDotProduct = glm::dot(crossProducts[i], a_pOther->v3Corner[j]);
+
+				if (tempDotProduct <= a_min)
+					a_min = tempDotProduct;
+
+				if (tempDotProduct >= a_max)
+					a_max = tempDotProduct;
+
+				if (tempOtherDotProduct <= b_min)
+					b_min = tempOtherDotProduct;
+
+				if (tempOtherDotProduct >= b_max)
+					b_max = tempOtherDotProduct;
+			}
+
+			// if there is any overlap of projections, return which axis is being crossed
+			if (a_min >= b_max || a_max <= b_min) 
+			{
+				// depending on our current value of i, there is a corresponding cross product in our crossProducts array
+				switch (i)
+				{
+					case 0:
+						return eSATResults::SAT_AXxBX;
+					case 1:
+						return eSATResults::SAT_AXxBY;
+					case 2:
+						return eSATResults::SAT_AXxBZ;
+					case 3:
+						return eSATResults::SAT_AYxBX;
+					case 4:
+						return eSATResults::SAT_AYxBY;
+					case 5:
+						return eSATResults::SAT_AYxBZ;
+					case 6:
+						return eSATResults::SAT_AZxBX;
+					case 7:
+						return eSATResults::SAT_AZxBY;
+					case 8:
+						return eSATResults::SAT_AZxBZ;
+				}
+			}
+		}
+	}
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
