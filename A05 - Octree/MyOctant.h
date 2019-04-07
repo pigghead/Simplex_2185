@@ -16,7 +16,7 @@ class MyOctant
 {
 	static uint m_uOctantCount;  // number of octants in existance
 	static uint m_uMaxLevel;  // maximum level an octant can go
-	static uint m_uIdealEntityCount;  // how many entities object will contain
+	static uint m_uIdealEntityCount;  // how many entities can exist in an octant
 
 	uint m_uID = 0;  // stores ID for current octant
 	uint m_uLevel = 0;  // current level of the octant
@@ -27,6 +27,7 @@ class MyOctant
 	MeshManager* m_pMeshMngr = nullptr;
 	MyEntityManager* m_pEntityMngr = nullptr;
 
+	// Center, min, max of octant
 	vector3 m_v3Center = vector3(0.0f);
 	vector3 m_v3Min = vector3(0.0f);
 	vector3 m_v3Max = vector3(0.0f);
@@ -44,7 +45,7 @@ public:
 	MyOctant(vector3 a_v3Center, float a_fSize);  //d
 	MyOctant(MyOctant const& other);  //d
 	MyOctant& operator= (MyOctant const& other);  //d
-	MyOctant(void);
+	~MyOctant(void);
 	void Swap(MyOctant& other);
 	float GetSize(void);  //d
 	vector3 GetCenterGlobal(void);  //d 
@@ -53,6 +54,7 @@ public:
 	bool IsColliding(uint a_uRBIndex);
 	void Display(uint a_nIndex, vector3 a_v3Color = C_YELLOW);
 	void Display(vector3 a_v3Color = C_YELLOW);
+	void DisplayLeafs(vector3 a_v3Color = C_YELLOW);
 	void ClearEntityList(void);
 	void Subdivide(void);
 	MyOctant* GetChild(uint a_nChild);
